@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
 import Inicio from "./pages/Inicio";
 import Reserva from "./pages/Reserva";
 import AdminPanel from "./pages/AdminPanel";
@@ -6,20 +7,26 @@ import AdminPanel from "./pages/AdminPanel";
 export default function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100 flex flex-col">
-        <nav className="bg-blue-600 text-white p-4 flex justify-center gap-4">
-          <Link to="/" className="hover:underline">Inicio</Link>
-          <Link to="/reservar" className="hover:underline">Reservar Cita</Link>
-          <Link to="/admin" className="hover:underline">Panel de Control</Link>
-        </nav>
+      <div className="min-h-screen bg-blue-500 flex flex-col">
+        
+        {/* Navbar fijo en la parte superior */}
+        <Navbar />
 
-        <div className="flex-1 p-8">
-          <Routes>
-            <Route path="/" element={<Inicio />} />
-            <Route path="/reservar" element={<Reserva />} />
-            <Route path="/admin" element={<AdminPanel />} />
-          </Routes>
+        {/* Ajustamos el margen para que el contenido no quede oculto debajo del navbar */}
+         <div className="mt-16 flex-1 flex justify-center items-center">
+        <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6">
+            <Routes>
+              <Route path="/" element={<Inicio />} />
+              <Route path="/reservar" element={<Reserva />} />
+              <Route path="/admin" element={<AdminPanel />} />
+            </Routes>
+          </div>
         </div>
+
+        {/* Footer fijo abajo */}
+        <footer className="bg-blue-600 text-white text-center p-4 shadow-md">
+          © 2025 Gestión de Citas - Todos los derechos reservados
+        </footer>
       </div>
     </Router>
   );

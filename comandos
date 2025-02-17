@@ -1,0 +1,11 @@
+Iniciar backend = npx nodemon server.js
+Ver que procesos usan el puerto xxxx = netstat -ano | findstr :5000
+Terminar el proceso = taskkill /PID 5000 /F
+
+Iniciar el frontend = npm run dev
+Si el puerto está ocupado elegir otro = npm run dev -- --port 5174
+
+Obtener citas = Invoke-WebRequest -Uri http://localhost:5000/api/citas -Method GET
+Crear cita = Invoke-WebRequest -Uri http://localhost:5000/api/citas -Method POST -Body '{"nombre": "Juan", "telefono": "34637659355", "fecha": "2025-03-05", "hora": "11:00", "servicio": "Corte de pelo"}' -ContentType "application/json"
+Actualizar cita = Invoke-WebRequest -Uri http://localhost:5000/api/citas/1 -Method PUT -Body '{"nombre": "Juan Modificado", "telefono": "34637659355", "fecha": "2025-03-06", "hora": "12:00", "servicio": "Barba"}' -ContentType "application/json"
+Eliminar cita = Invoke-WebRequest -Uri http://localhost:5000/api/citas/1 -Method DELETE

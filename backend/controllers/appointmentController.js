@@ -12,9 +12,15 @@ const getCitas = (req, res) => {
 
 // Crear una nueva cita
 const createCita = async (req, res) => {
-    const { nombre, telefono, fecha, hora, servicio } = req.body;
+    let { nombre, telefono, fecha, hora, servicio } = req.body;
+
     if (!nombre || !telefono || !fecha || !hora || !servicio) {
         return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+
+    // Asegurar que el teléfono tenga el prefijo "34"
+    if (!telefono.startsWith("34")) {
+        telefono = `34${telefono}`;
     }
 
     try {
@@ -39,50 +45,58 @@ const createCita = async (req, res) => {
                 if (err) return res.status(500).json({ error: err.message });
                 if (citas.length > 0) return res.status(400).json({ error: 'El horario no está disponible. Elige otra hora.' });
 
-                // Insertar cita
-                db.run('INSERT INTO citas (nombre, telefono, fecha, hora, hora_fin, servicio) VALUES (?, ?, ?, ?, ?, ?)',
-                    [nombre, telefono, fecha, hora, horaFin, servicio], function (err) {
-                    if (err) return res.status(500).json({ error: err.message });
+                // Insertar cita en la base de datos
+                db.run(
+                    'INSERT INTO citas (nombre, telefono, fecha, hora, hora_fin, servicio) VALUES (?, ?, ?, ?, ?, ?)',
+                    [nombre, telefono, fecha, hora, horaFin, servicio],
+                    function (err) {
+                        if (err) return res.status(500).json({ error: err.message });
 
-                    const cita = { id: this.lastID, nombre, telefono, fecha, hora, horaFin, servicio };
+                        const cita = {
+                            id: this.lastID,
+                            nombre,
+                            telefono,
+                            fecha,
+                            hora,
+                            horaFin,
+                            servicio
+                        };
 
-                    // Crear evento en Google Calendar
-                    crearEvento(cita).then((eventoId) => {
-                        if (eventoId) {
-                            console.log(`📌 Google Calendar ha devuelto este ID: ${eventoId}`);
-                    
-                            db.run('UPDATE citas SET google_event_id = ? WHERE id = ?', [eventoId, cita.id], (err) => {
-                                if (err) {
-                                    console.error('⚠️ Error al guardar google_event_id en la base de datos:', err.message);
-                                } else {
-                                    console.log(`✅ google_event_id guardado correctamente en la BD: ${eventoId}`);
-                                }
-                            });
-                    
-                            cita.google_event_id = eventoId;
-                        } else {
-                            console.error("❌ No se recibió un google_event_id válido desde Google Calendar.");
+                        console.log("✅ Cita creada en la base de datos:", cita);
+
+                        // 🔹 Agregar cita a Google Calendar
+                        crearEvento(cita).then((eventoId) => {
+                            if (eventoId) {
+                                console.log(`📅 Evento creado en Google Calendar: ${eventoId}`);
+                                db.run('UPDATE citas SET google_event_id = ? WHERE id = ?', [eventoId, cita.id]);
+                            } else {
+                                console.error("❌ No se pudo obtener un google_event_id");
+                            }
+                        }).catch(error => console.error("❌ Error en Google Calendar:", error));
+
+                        // 🔹 Enviar mensaje de WhatsApp
+                        try {
+                            const mensaje = `📅 Hola ${nombre}, tu cita para *${servicio}* está confirmada.\n📆 Fecha: ${fecha}\n🕒 Hora: ${hora}\n¡Te esperamos!`;
+                            console.log(`📨 Intentando enviar mensaje a ${telefono}...`);
+                            enviarMensajeWhatsApp(telefono, mensaje);
+                            console.log(`✅ Mensaje enviado correctamente a ${telefono}`);
+                        } catch (error) {
+                            console.error("⚠️ No se pudo enviar el mensaje de WhatsApp.", error);
                         }
-                    });
-                    
-                    
-                                        
 
-                    // Enviar mensaje de WhatsApp
-                    try {
-                        const mensaje = `📅 Hola ${nombre}, tu cita para *${servicio}* está confirmada.\n📆 Fecha: ${fecha}\n🕒 Hora: ${hora}\n¡Te esperamos!`;
-                        enviarMensajeWhatsApp(telefono, mensaje);
-                    } catch (error) {
-                        console.error('⚠️ No se pudo enviar el mensaje de WhatsApp.');
+                        res.json(cita);
                     }
-                    res.json(cita);
-                });
+                );
             });
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+module.exports = { createCita };
+
 
 // Actualizar una cita
 const updateCita = (req, res) => {

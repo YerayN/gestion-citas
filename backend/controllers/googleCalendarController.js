@@ -20,8 +20,17 @@ const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 const crearEvento = async (cita) => {
     try {
         const startDateTime = `${cita.fecha}T${cita.hora}:00`;
-        const endHour = String(parseInt(cita.hora.split(':')[0]) + 1).padStart(2, '0'); // Asegurar dos dígitos
-        const endDateTime = `${cita.fecha}T${endHour}:${cita.hora.split(':')[1]}:00`;
+
+        // Calcular hora de fin basándonos en la duración del servicio
+        const [horaStr, minStr] = cita.hora.split(":");
+        const horaInicio = parseInt(horaStr);
+        const minInicio = parseInt(minStr);
+        const duracion = cita.duracion || 30; // Si no tiene duración, por defecto 30 min
+
+        const totalMinutos = horaInicio * 60 + minInicio + duracion;
+        const horaFin = Math.floor(totalMinutos / 60);
+        const minFin = totalMinutos % 60;
+        const endDateTime = `${cita.fecha}T${String(horaFin).padStart(2, '0')}:${String(minFin).padStart(2, '0')}:00`;
 
         const evento = {
             summary: `Cita: ${cita.servicio} con ${cita.nombre}`,
@@ -47,10 +56,10 @@ const crearEvento = async (cita) => {
         return response.data.id;
     } catch (error) {
         console.error('❌ Error al crear el evento en Google Calendar:', error);
-        console.error('🔍 Respuesta de Google:', error.response?.data || error.message);
         throw new Error('No se pudo crear el evento en Google Calendar');
     }
 };
+
 
 /**
  * Actualizar un evento en Google Calendar
