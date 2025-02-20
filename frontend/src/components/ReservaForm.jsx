@@ -13,7 +13,7 @@ const ReservaForm = () => {
   const [cargando, setCargando] = useState(false);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/citas/servicios")
+    axios.get("http://localhost:5000/api/servicios")
       .then((res) => setServicios(res.data))
       .catch((error) => console.error("❌ Error al obtener servicios:", error));
   }, []);

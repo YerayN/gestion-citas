@@ -1,28 +1,23 @@
-// Importaciones necesarias
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const cors = require("cors");
+const appointmentsRoutes = require("./routes/appointments");
+const paymentsRoutes = require("./routes/payments");
+const { router: authRoutes, verificarToken } = require("./routes/auth");
+const servicesRoutes = require("./routes/services");
 
-// Inicialización de Express
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Importar rutas
-const citasRoutes = require('./routes/appointments');
-app.use('/api/citas', citasRoutes);
+// Rutas públicas
+app.use("/api/auth", authRoutes);
+app.use("/api/servicios", servicesRoutes);
+app.use("/api/citas", appointmentsRoutes);
 
-// Ruta de prueba
-app.get('/', (req, res) => {
-    res.send('Servidor funcionando correctamente 🚀');
-});
+// Rutas protegidas
+app.use("/api/pagos", verificarToken, paymentsRoutes);
 
-// Iniciar servidor
+const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });
-
-require('./services/recordatorioService'); // Activar recordatorios automáticos

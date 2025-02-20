@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Inicio from "./pages/Inicio";
 import Reserva from "./pages/Reserva";
 import AdminPanel from "./pages/AdminPanel";
+import GestionCitas from "./pages/GestionCitas"; // 🔹 Importa la página de Gestión de Citas
 
 export default function App() {
   return (
@@ -13,12 +14,13 @@ export default function App() {
         <Navbar />
 
         {/* Ajustamos el margen para que el contenido no quede oculto debajo del navbar */}
-         <div className="mt-16 flex-1 flex justify-center items-center">
-        <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6">
+        <div className="mt-16 flex-1 flex justify-center items-center">
+          <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6">
             <Routes>
               <Route path="/" element={<Inicio />} />
               <Route path="/reservar" element={<Reserva />} />
               <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/admin/gestionar-citas" element={<GestionCitas />} /> {/* 🔹 Añadimos esta línea */}
             </Routes>
           </div>
         </div>
